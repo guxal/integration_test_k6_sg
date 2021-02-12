@@ -1,0 +1,11 @@
+version: '3.1'
+
+services:
+  k6:
+    image: loadimpact/k6:latest
+    entrypoint: /bin/sh
+    user: root
+    ports:
+      - 6565:6565
+    volumes:
+      - .:/scripts
