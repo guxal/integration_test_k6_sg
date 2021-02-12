@@ -1,0 +1,52 @@
+{ 
+    "url": "http://host.docker.internal:5000/v1/customers",
+    "body":
+    {
+        "type": "Customer",
+        "person_type": "Person",
+        "id_type": "13",
+        "identification": "",
+        "check_digit": "4",
+        "name": [
+          "David",
+          "ortiz"
+        ],
+        "commercial_name": "Siigo",
+        "branch_office": 0,
+        "active": true,
+        "vat_responsible": true,
+        "address": {
+          "address": "Cra. 18 #79A - 42",
+          "city": {
+            "country_code": "Co",
+            "state_code": "19",
+            "city_code": "19001"
+          },
+         "postal_code": "110911"
+        },
+        "phones": [
+           {
+            "indicative": "57",
+            "number": "3006003345",
+            "extension": "132"
+          }
+        ],
+        "contacts": [
+          {
+            "first_name": "David",
+            "last_name": "Ortiz",
+            "email": "david.ortiz@contacto.com",
+            "phone": {
+              "indicative": "57",
+              "number": "3006003345",
+              "extension": "132"
+            }
+          }
+        ],
+        "comments": "Comentarios",
+        "related_users": {
+          "seller_id": 21
+        }
+    }
+
+}

@@ -1,0 +1,34 @@
+{
+"url": "http://host.docker.internal:5000/v1/credit-notes",
+"body":  
+{
+    "document": {
+        "id": 10705
+    },
+    "date": "2021-02-01",
+    "customer": {
+      "identification": "qwqwqwqw"
+    },
+    "invoice": "d2ce2029-2ad3-4974-aed6-92d0f5516daa",
+    "seller": 29,
+    "total": 20000,
+    "items": [
+      {
+        "id": "cff0ef2b-bc60-46af-a4da-c06d56cda4ef",
+        "code": "1212111ddd222",
+        "quantity": 1,
+        "price": 20000,
+        "description": "asasaaaaaaaaaaaa",
+        "discount": 10,
+        "taxes": [],
+        "total": 18000
+      }
+    ],
+    "payments": [
+      {
+        "id": 58,
+        "value": 18000
+      }
+    ]
+}
+}
