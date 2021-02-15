@@ -14,10 +14,10 @@ docker-compose run k6
 test run with
 
 ```bash
-k6 run <testfile>.js -e JSON="<jsonfilename>"
+k6 run <testfile>.js -e JSON="<jsonfilename>" -e TEST="testname"
 
 # example
-k6 run items.js -e JSON="create"
+k6 run items.js -e JSON="create" -e TEST="items_invalid_seller_salesbysalesman"
 ```
 
 
