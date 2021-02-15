@@ -603,6 +603,7 @@ export function items_invalid_seller_not_active() {
 // ---------------------------------------------------------------
 
 function build_test(test) {
+    // TESTS
     var test_array = {
         items_invalid_quantity,
         items_invalid_discount_max_and_min_range_config_invoice_discount_percentage,
@@ -626,10 +627,9 @@ function build_test(test) {
     for (const [key, value] of Object.entries(test_array)) {
         if (key == test)
         {
-            // console.log(key);
             let namegroup = key.split('_');
+
             namegroup.shift();
-            // console.log(namegroup);
             group(key.split('_', 1), function () {
                 group(namegroup.join(' '), function() {
                     value();
@@ -641,113 +641,13 @@ function build_test(test) {
 
 export default function() {
 
-        const name_test = __ENV.TEST;
+    const name_test = __ENV.TEST;
 
-        if (name_test == "" || name_test == null)
-        {
-            console.error("\nUsing: k6 run -e JSON='file' -e TEST='name' test.js\nrequired TEST=name");
-            return;
-        }
+    if (name_test == "" || name_test == null)
+    {
+        console.error("\nUsing: k6 run -e JSON='file' -e TEST='name' test.js\nrequired TEST=name");
+        return;
+    }
 
-
-        build_test(name_test);
-
-        // group('items', function () {
-
-            // DISCOUNT
-
-            //  group('invalid discount max and min range config invoice discount percentage', function () {
-            //      items_invalid_discount_max_and_min_range_config_invoice_discount_percentage();
-            //      sleep(1);
-            //  });
-
-            // QUANTITY
-
-            //  group('invalid quantity', function () {
-            //      items_invalid_quantity();
-            //      sleep(1);
-            //  });
-
-            // PRICES
-
-            //  group('invalid prices', function() {
-            //      items_invalid_prices();
-            //      sleep(1);
-            //  });
-
-            // CODE
-    
-            //  group('invalid code length max', function() {
-            //      items_invalid_code_length_max();
-            //      sleep(1);
-            //  });
-
-            // DESCRIPTION 
-    
-            //  group('invalid description length max', function() {
-            //      items_invalid_description_length_max();
-            //      sleep(1);
-            //  });
-            
-            // WAREHOUSE
-
-             // group('invalid warehouse not active', function(){
-             //     items_invalid_warehouse_not_active();
-             //     sleep(10);
-             // });
-
-            //  group('items_invalid_warehouse_active_product_no_handle_inventory', function(){
-            //     items_invalid_warehouse_active_product_no_handle_inventory();
-            //  });
-
-            //  group('invalid warehouse', function(){
-            //      items_invalid_warehouse();
-            //      sleep(1);
-            //  });
-
-            // TAXES
-        
-             // group('invalid taxes', function(){
-             //     items_invalid_taxes();
-             //     sleep(1);
-             // });
-
-            //  group('invalid taxes not exist', function(){
-            //      items_invalid_taxes_not_exist();
-            //      sleep(1);
-            //  });
-
-            // group('invalid taxes parameter inactive', function(){
-            //     items_invalid_taxes_parameter_inactive();
-            //     sleep(10);
-            // });
-            
-
-            // SELLER
-        
-            // group('invalid seller not exist', function(){
-            //    items_invalid_seller_not_exist();
-            //    sleep(10);
-            // });
-
-            // group('invalid seller sales by salesman', function(){
-            //     items_invalid_seller_salesbysalesman();
-            //    sleep(10);
-// 
-            // });
-
-
-        // }); 
-
-        
-       // group('payments', function() {
-        
-        // PAYMENTS
-
-        //    group('invalid value', function() {
-        //        payments_invalid_value();
-        //        sleep(1);
-        //    });
-//
-        //});  
+    build_test(name_test);
 }
