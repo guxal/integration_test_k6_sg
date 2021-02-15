@@ -21,10 +21,18 @@ k6 run items.js -e JSON="create" -e TEST="items_invalid_seller_salesbysalesman"
 ```
 
 
+# RUN ALL
+
 ## INSTALL BASH 
 
 ```sh
 apk update
 
 apk add bash
+```
+
+## AND RUN FILE 
+
+```
+./autotest.sh
 ```
