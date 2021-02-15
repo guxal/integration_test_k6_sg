@@ -19,3 +19,12 @@ k6 run <testfile>.js -e JSON="<jsonfilename>"
 # example
 k6 run items.js -e JSON="create"
 ```
+
+
+## INSTALL BASH 
+
+```sh
+apk update
+
+apk add bash
+```
