@@ -5,7 +5,7 @@
 
 import http from 'k6/http';
 import { auth } from '../auth.js';
-import { group, fail, check } from 'k6';
+import { group, fail, check, sleep } from 'k6';
 import { check_obj, MESSAGE } from '../utils.js';
 
 
@@ -36,7 +36,8 @@ export function items_invalid_quantity() {
     console.log(res1.body);
 
     // max value + 1
-    obj.items[0].quantity = 99,999,999.99 + 1;
+    console.log(Number.MAX_SAFE_INTEGER);            // 9007199254740991
+    obj.items[0].quantity = Number.MAX_SAFE_INTEGER ;// 99,999,999.99 + 1; -> the payment is invalid amount
     let res2 =  http.post(url, JSON.stringify(obj), auth());
     console.log(res2.body);
 
@@ -46,16 +47,16 @@ export function items_invalid_quantity() {
     console.log(res3.body);
 
     // set quantity max 2 decimal with comma
-    obj.items[0].quantity = 1,9999;
-    let res4 =  http.post(url, JSON.stringify(obj), auth());
-    console.log(res.body);
+    // obj.items[0].quantity = 1,9999;
+    // let res4 =  http.post(url, JSON.stringify(obj), auth());
+    // console.log(res.body);
 
     // checks
     check_obj(res, err);
     check_obj(res1, err);
     check_obj(res2, err);
     check_obj(res3, err);
-    check_obj(res4, err);
+    // check_obj(res4, err);
 }
 
 
@@ -71,6 +72,7 @@ export function items_invalid_discount_max_and_min_range_config_invoice_discount
         params  : "items[0].discount",
         detail  : "Check the API documentation: https://siigoapi.docs.apiary.io/#introduction/codigos-de-error/invalid_range"
     };
+    //** SETUP CONFIG INITIAL **/
     // get config discount by percentage in invoice send
     // ms AcentryQueries get invoice
     let invoice = http.get("http://host.docker.internal:9800/api/invoices/" + obj.invoice, auth());
@@ -153,7 +155,7 @@ export function items_invalid_prices() {
     };
 
     // max value
-    obj.items[0].price = 999,999,999,999.99;
+    obj.items[0].price = Number.MAX_SAFE_INTEGER; // 999,999,999,999.99;
     let res =  http.post(url, JSON.stringify(obj), auth());
     console.log(res.body);
 
@@ -163,9 +165,9 @@ export function items_invalid_prices() {
     console.log(res1.body);
 
     // number with comma
-    obj.items[0].price = 1,9999999;
-    let res2 =  http.post(url, JSON.stringify(obj), auth());
-    console.log(res2.body);
+    // obj.items[0].price = 1,9999999;
+    // let res2 =  http.post(url, JSON.stringify(obj), auth());
+    // console.log(res2.body);
 
     // number negative
     obj.items[0].price = -1;
@@ -175,7 +177,7 @@ export function items_invalid_prices() {
     // checks 
     check_obj(res, err);
     check_obj(res1, err);
-    check_obj(res2, err);
+    // check_obj(res2, err);
     check_obj(res3, err);
 }
 
@@ -188,36 +190,39 @@ export function payments_invalid_value() {
     let err = {
         status  : 400,
         code    : "invalid_amount",
-        message : "The payments amount is invalid", 
+        message : "The value amount is invalid", 
         params  : "payments[0].value",
         detail  : "Check the API documentation: https://siigoapi.docs.apiary.io/#introduction/codigos-de-error/invalid_amount"
     };
 
     // max value
-    obj.payments[0].value = 999,999,999,999.99;
+    obj.payments[0].value = Number.MAX_SAFE_INTEGER + 1;
     let res =  http.post(url, JSON.stringify(obj), auth());
+    sleep(1);
     console.log(res.body);
 
     // max 2 decimals
     obj.payments[0].value = 1.999;
     let res1 =  http.post(url, JSON.stringify(obj), auth());
+    sleep(1);
     console.log(res1.body);
 
     // number with comma
-    obj.payments[0].value = 1,9999999;
-    let res2 =  http.post(url, JSON.stringify(obj), auth());
-    console.log(res2.body);
+    // obj.payments[0].value = 1,9999999;
+    // let res2 =  http.post(url, JSON.stringify(obj), auth());
+    // console.log(res2.body);
 
     // number negative
     obj.payments[0].value = -1;
-    let res3 =  http.post(url, JSON.stringify(obj), auth());
-    console.log(res3.body);
+    let res2 =  http.post(url, JSON.stringify(obj), auth());
+    sleep(1);
+    console.log(res2.body);
 
     // checks       
     check_obj(res, err);
     check_obj(res1, err);
     check_obj(res2, err);
-    check_obj(res3, err);
+    // check_obj(res3, err);
 }
 
 
@@ -252,8 +257,8 @@ export function items_invalid_description_length_max() {
     let err = {
         status  : 400,
         code    : "length_max",
-        message : "The field code only allows a maximum length of 30 characters", 
-        params  : "items[0].code",
+        message : "The field description only allows a maximum length of 4000 characters", 
+        params  : "items[0].description",
         detail  : "Check the API documentation: https://siigoapi.docs.apiary.io/#introduction/codigos-de-error/length_max"
     };
 
@@ -276,7 +281,7 @@ export function items_invalid_warehouse_not_active() {
     var url = data.url;
     var obj = data.body;
     let allowedWarehouse = http.get("http://host.docker.internal:8671/ACGeneral/api/v1/Company/GetUseWarehouse?namespace=v1", auth());
-    console.log(allowedWarehouse.body);
+    console.log(allowedWarehouse.body); // TRUE
     //allowedWarehouse = JSON.parse(invoice.body);
     // console.log(invoice);
 
@@ -286,6 +291,33 @@ export function items_invalid_warehouse_not_active() {
     console.log(res.body);
 }
 
+export function items_invalid_warehouse_active_product_no_handle_inventory() {
+    MESSAGE("RESPONSE: ITEMS INVALID WAREHOUSE ACTIVE PRODUCT NOT HANDLE INVENTORY");
+    var url = data.url;
+    var obj = data.body;
+    // expected
+    let err = {
+        status  : 400,
+        code    : "product_settings",
+        message : "The warehouse cannot be used, you must verify the product settings", 
+        params  : "items[0].warehouse",
+        detail  : "Check the API documentation: https://siigoapi.docs.apiary.io/#introduction/codigos-de-error/product_settings"
+    };
+
+    let allowedWarehouse = http.get("http://host.docker.internal:8671/ACGeneral/api/v1/Company/GetUseWarehouse?namespace=v1", auth());
+    console.log(allowedWarehouse.body); // TRUE
+    //allowedWarehouse = JSON.parse(invoice.body);
+    // console.log(invoice);
+
+    // product setting not handle inventory
+    obj.items[0].warehouse = 12;
+    let res =  http.post(url, JSON.stringify(obj), auth());
+    console.log(res.body);
+
+    // checks
+    check_obj(res, err);
+}
+
 export function items_invalid_warehouse() {
     MESSAGE("RESPONSE: ITEMS INVALID WAREHOUSE");
     var url = data.url;
@@ -293,7 +325,7 @@ export function items_invalid_warehouse() {
     // expected
     let err = {
         status  : 400,
-        code    : "length_max",
+        code    : "invalid_reference",
         message : "The field code only allows a maximum length of 30 characters", 
         params  : "items[0].code",
         detail  : "Check the API documentation: https://siigoapi.docs.apiary.io/#introduction/codigos-de-error/length_max"
@@ -307,6 +339,11 @@ export function items_invalid_warehouse() {
     obj.items[0].warehouse = 0;
     let res =  http.post(url, JSON.stringify(obj), auth());
     console.log(res.body);
+
+    // warehouse not exist
+    obj.items[0].warehouse = 121;
+    let res3 =  http.post(url, JSON.stringify(obj), auth());
+    console.log(res3.body);
 
     // warehouse negative
     obj.items[0].warehouse = -1;
@@ -322,6 +359,7 @@ export function items_invalid_warehouse() {
     check_obj(res, err);
     check_obj(res1, err);
     check_obj(res2, err);
+    check_obj(res3, err);
 }
 
 //** ITEMS TAXES **//
@@ -383,7 +421,7 @@ export function items_invalid_taxes_not_exist() {
         status  : 400,
         code    : "invalid_reference",
         message : "The tax doesn't exist: 1212121",
-        params  : "items[0].taxes[0].id",
+        params  : "taxes[0].id",
         detail  : "Check the API documentation: https://siigoapi.docs.apiary.io/#introduction/codigos-de-error/invalid_reference"
     }
 
@@ -404,8 +442,8 @@ export function items_invalid_taxes_parameter_inactive() {
     let err = { 
         status  :  400,
         code    : "parameter_inactive",
-        message : "The tax doesn't exist: 1212121", 
-        params  : "items[0].taxes[0].id",
+        message : "The id is inactive: 1212121", 
+        params  : "taxes[0].id",
         detail  : "Check the API documentation: https://siigoapi.docs.apiary.io/#introduction/codigos-de-error/parameter_inactive"
     };
 
@@ -425,11 +463,11 @@ export function items_invalid_taxes_parameter_inactive() {
     console.log(res2.body);
 
     // checks
-    err.message = `The tax doesn't exist: ${Number.MAX_SAFE_INTEGER + 1}`;
+    err.message = `The id is inactive: ${Number.MAX_SAFE_INTEGER + 1}`;
     check_obj(res, err);
-    err.message = "The tax doesn't exist: 0";
+    err.message = "The id is inactive: 0";
     check_obj(res1, err);
-    err.message = "The tax doesn't exist: -1";
+    err.message = "The id is inactive: -1";
     check_obj(res2, err);
 }
 
@@ -444,98 +482,272 @@ export function items_invalid_seller_not_exist() {
     let err = {
         status  : 400,
         code    : "invalid_reference",
-        message : "The tax doesn't exist: 121212", 
+        message : "The seller doesn't exist: 121212", 
         params  : "items[0].seller",
         detail  : "Check the API documentation: https://siigoapi.docs.apiary.io/#introduction/codigos-de-error/invalid_reference"
     };
-    // don't exists
-    obj.items[0].seller = 121212
-    let res =  http.post(url, JSON.stringify(obj), auth());
-    console.log(res.body);
+
+    //** SETUP CONFIG INITIAL **/
+    // get config discount by percentage in invoice send
+    // ms AcentryQueries get invoice
+    let invoice = http.get("http://host.docker.internal:9800/api/invoices/" + obj.invoice, auth());
+    // get JSON data 
+    invoice = JSON.parse(invoice.body);
+    let config = JSON.parse(invoice.entry.jsonData);
 
     // is zero
-    obj.items[0].seller = 0
+    obj.items[0].seller = 0;
     let res1 =  http.post(url, JSON.stringify(obj), auth());
     console.log(res1.body);
 
     // negative
-    obj.items[0].seller = -1
+    obj.items[0].seller = -1;
     let res2 =  http.post(url, JSON.stringify(obj), auth());
     console.log(res2.body);
 
     // max long
-    obj.items[0].seller = Number.MAX_SAFE_INTEGER + 1
+    obj.items[0].seller = Number.MAX_SAFE_INTEGER + 1;
     let res3 =  http.post(url, JSON.stringify(obj), auth());
     console.log(res3.body);
 
+    // don't exists
+    obj.items[0].seller = 121212;
+    let res =  http.post(url, JSON.stringify(obj), auth());
+    console.log(res.body);
+
     // checks
-    err.message = `The tax doesn't exist: 121212`;
-    check_obj(res, err);
-    err.message = "The tax doesn't exist: 0";
+    err.message = "The seller doesn't exist: 0";
     check_obj(res1, err);
-    err.message = "The tax doesn't exist: -1";
+    err.message = "The seller doesn't exist: -1";
     check_obj(res2, err);
-    err.message = `The tax doesn't exist: ${Number.MAX_SAFE_INTEGER + 1}`;
-    check_obj(res3, err);
+
+    // validar que este habilidato el manejo de vendedores por item en la factura para saltar las exepciones en los casos
+    // : numero maximo
+    // : numero inexistente
+    if (config.AllowSalesBySalesman)
+    {
+        // checks
+        err.message = `The seller doesn't exist: 121212`;
+        check_obj(res, err);
+
+        err.message = `The seller doesn't exist: ${Number.MAX_SAFE_INTEGER + 1}`;
+        check_obj(res3, err);
+    }
+    else
+    {
+        // checks
+        err.message = `The following seller cannot be used, you must verify the document settings`;
+        err.code = 'document_settings';
+        err.detail = 'Check the API documentation: https://siigoapi.docs.apiary.io/#introduction/codigos-de-error/document_settings';
+
+        check_obj(res, err);
+        check_obj(res3, err);
+    }
+
+}
+
+// invoice con activo manejo de vendedor por item e4e948ab-ddc1-4207-9236-31b3db0cfb12
+
+export function items_invalid_seller_salesbysalesman() {
+    MESSAGE("RESPONSE: ITEMS INVALID SELLER INACTIVE AND REQUIRED : TRUE HANDLER SALESMAN BY ITEM");
+    var url = data.url;
+    var obj = data.body;
+    // expected
+    let err = {
+        status  : 400,
+        code    : "parameter_inactive",
+        message : "The id is inactive: 53",
+        params  : "items[0].seller",
+        detail  : "Check the API documentation: https://siigoapi.docs.apiary.io/#introduction/codigos-de-error/parameter_inactive"
+    };
+    // invoice with sales by salesman true
+    obj.invoice = 'e4e948ab-ddc1-4207-9236-31b3db0cfb12';
+    //** SETUP CONFIG INITIAL **/
+    // get config discount by percentage in invoice send
+    // ms AcentryQueries get invoice
+    let invoice = http.get("http://host.docker.internal:9800/api/invoices/" + obj.invoice, auth());
+    // get JSON data 
+    invoice = JSON.parse(invoice.body);
+    console.log(invoice.entry.jsonData);
+    let config = JSON.parse(invoice.entry.jsonData);
+
+
+
+    if (config.EntryType.AllowSalesBySalesman)
+    {
+        // is seller inactive
+        obj.items[0].seller = 53;
+        let res1 =  http.post(url, JSON.stringify(obj), auth());
+        console.log(res1.body);
+
+        // is seller null
+        delete obj.items[0].seller;
+        let res2 =  http.post(url, JSON.stringify(obj), auth());
+        console.log(res2.body);
+
+        // checks
+        err.message = "The id is inactive: 53";
+        check_obj(res1, err);
+        err.message = "The field seller is required";
+        err.code = "parameter_required";
+        err.detail = "Check the API documentation: https://siigoapi.docs.apiary.io/#introduction/codigos-de-error/parameter_required"
+        check_obj(res2, err);
+    }
+
+}
+
+export function items_invalid_seller_not_active() {
+    
+}
+
+// ---------------------------------------------------------------
+
+function build_test(test) {
+    var test_array = {
+        items_invalid_quantity,
+        items_invalid_discount_max_and_min_range_config_invoice_discount_percentage,
+        items_invalid_discount_config_invoice_discount_value,
+        items_invalid_discount,
+        items_invalid_prices,
+        payments_invalid_value,
+        items_invalid_code_length_max,
+        items_invalid_description_length_max,
+        items_invalid_warehouse_not_active,
+        items_invalid_warehouse_active_product_no_handle_inventory,
+        items_invalid_warehouse,
+        items_invalid_taxes,
+        items_invalid_taxes_not_exist,
+        items_invalid_taxes_parameter_inactive,
+        items_invalid_seller_not_exist,
+        items_invalid_seller_salesbysalesman,
+        items_invalid_seller_not_active,
+    }
+
+    for (const [key, value] of Object.entries(test_array)) {
+        if (key == test)
+        {
+            // console.log(key);
+            let namegroup = key.split('_');
+            namegroup.shift();
+            // console.log(namegroup);
+            group(key.split('_', 1), function () {
+                group(namegroup.join(' '), function() {
+                    value();
+                });
+            });
+        }
+    }
 }
 
 export default function() {
 
-    group('items', function () {
+        const name_test = __ENV.TEST;
 
-        group('invalid discount max and min range config invoice discount percentage', function () {
-            items_invalid_discount_max_and_min_range_config_invoice_discount_percentage();
-        });
+        if (name_test == "" || name_test == null)
+        {
+            console.error("\nUsing: k6 run -e JSON='file' -e TEST='name' test.js\nrequired TEST=name");
+            return;
+        }
 
-        group('invalid quantity', function () {
-            items_invalid_quantity();
-        });
+
+        build_test(name_test);
+
+        // group('items', function () {
+
+            // DISCOUNT
+
+            //  group('invalid discount max and min range config invoice discount percentage', function () {
+            //      items_invalid_discount_max_and_min_range_config_invoice_discount_percentage();
+            //      sleep(1);
+            //  });
+
+            // QUANTITY
+
+            //  group('invalid quantity', function () {
+            //      items_invalid_quantity();
+            //      sleep(1);
+            //  });
+
+            // PRICES
+
+            //  group('invalid prices', function() {
+            //      items_invalid_prices();
+            //      sleep(1);
+            //  });
+
+            // CODE
     
-        group('invalid prices', function() {
-            items_invalid_prices();
-        });
+            //  group('invalid code length max', function() {
+            //      items_invalid_code_length_max();
+            //      sleep(1);
+            //  });
 
-        group('invalid code length max', function() {
-            items_invalid_code_length_max();
-        });
-
-        group('invalid description length max', function() {
-            items_invalid_description_length_max();
-        });
-
-        group('invalid warehouse not active', function(){
-            items_invalid_warehouse_not_active();
-        });
-
-        group('invalid warehouse', function(){
-            items_invalid_warehouse();
-        });
-
-        group('invalid taxes', function(){
-            items_invalid_taxes();
-        });
-
-        group('invalid taxes not exist', function(){
-            items_invalid_taxes_not_exist();
-        });
-
-        group('invalid taxes parameter inactive', function(){
-            items_invalid_taxes_parameter_inactive();
-        });
-
-        group('invalid seller not exist', function(){
-            items_invalid_seller_not_exist();
-        });
-
-    }); 
-
-    group('payments', function() {
-
-        group('invalid value', function() {
-            payments_invalid_value();
-        });
+            // DESCRIPTION 
     
-    });
+            //  group('invalid description length max', function() {
+            //      items_invalid_description_length_max();
+            //      sleep(1);
+            //  });
+            
+            // WAREHOUSE
+
+             // group('invalid warehouse not active', function(){
+             //     items_invalid_warehouse_not_active();
+             //     sleep(10);
+             // });
+
+            //  group('items_invalid_warehouse_active_product_no_handle_inventory', function(){
+            //     items_invalid_warehouse_active_product_no_handle_inventory();
+            //  });
+
+            //  group('invalid warehouse', function(){
+            //      items_invalid_warehouse();
+            //      sleep(1);
+            //  });
+
+            // TAXES
+        
+             // group('invalid taxes', function(){
+             //     items_invalid_taxes();
+             //     sleep(1);
+             // });
+
+            //  group('invalid taxes not exist', function(){
+            //      items_invalid_taxes_not_exist();
+            //      sleep(1);
+            //  });
+
+            // group('invalid taxes parameter inactive', function(){
+            //     items_invalid_taxes_parameter_inactive();
+            //     sleep(10);
+            // });
+            
+
+            // SELLER
+        
+            // group('invalid seller not exist', function(){
+            //    items_invalid_seller_not_exist();
+            //    sleep(10);
+            // });
+
+            // group('invalid seller sales by salesman', function(){
+            //     items_invalid_seller_salesbysalesman();
+            //    sleep(10);
+// 
+            // });
 
 
+        // }); 
+
+        
+       // group('payments', function() {
+        
+        // PAYMENTS
+
+        //    group('invalid value', function() {
+        //        payments_invalid_value();
+        //        sleep(1);
+        //    });
+//
+        //});  
 }
