@@ -450,7 +450,7 @@ export function items_invalid_taxes_parameter_inactive() {
     var url = data.url;
     var obj = data.body;
     // expected
-    let err = { 
+    let err = {
         status  :  400,
         code    : "parameter_inactive",
         message : "The id is inactive: 1212121", 
@@ -458,7 +458,7 @@ export function items_invalid_taxes_parameter_inactive() {
         detail  : "Check the API documentation: https://siigoapi.docs.apiary.io/#introduction/codigos-de-error/parameter_inactive"
     };
 
-    // max value long + 1
+    // max value integer
     obj.items[0].taxes = [{ "id": Number.MAX_SAFE_INTEGER + 1 }];
     let res =  http.post(url, JSON.stringify(obj), auth());
     console.log(res.body);
@@ -473,13 +473,39 @@ export function items_invalid_taxes_parameter_inactive() {
     let res2 =  http.post(url, JSON.stringify(obj), auth());
     console.log(res2.body);
 
+    // id inactive
+    obj.items[0].taxes = [{ "id": 589 }];
+    let res3 =  http.post(url, JSON.stringify(obj), auth());
+    console.log(res3.body);
+    
+    // max value long 
+    obj.items[0].taxes = [{ "id": Number.MAX_VALUE }];
+    let res4 =  http.post(url, JSON.stringify(obj), auth());
+    console.log(res4.body);
+
     // checks
-    err.message = `The id is inactive: ${Number.MAX_SAFE_INTEGER + 1}`;
+    err.message = "The tax is inactive: 589";
+    check_obj(res3, err);
+    // quizas este toque cambiarlo
+    err.message = `The tax doesn't exist: ${Number.MAX_SAFE_INTEGER + 1}`; // -> porque este entra y busca en la db
+    err.code = "invalid_reference";
+    err.detail = "Check the API documentation: https://siigoapi.docs.apiary.io/#introduction/codigos-de-error/invalid_reference";
     check_obj(res, err);
-    err.message = "The id is inactive: 0";
+    //
+    err.message = "The field id is required"; // when is 0
+    err.code = "parameter_required";
+    err.detail = "Check the API documentation: https://siigoapi.docs.apiary.io/#introduction/codigos-de-error/parameter_required";
     check_obj(res1, err);
-    err.message = "The id is inactive: -1";
+    // when is -1
+    err.code = "invalid_reference";
+    err.message = "The id doesn't exist: -1";
+    err.detail = "Check the API documentation: https://siigoapi.docs.apiary.io/#introduction/codigos-de-error/invalid_reference";
     check_obj(res2, err);
+    //
+    err.message = `Invalid data type: id`; // -> esto excede el long y lanza data type
+    err.code = "invalid_type";
+    err.detail = "Check the API documentation: https://siigoapi.docs.apiary.io/#introduction/codigos-de-error/invalid_type";
+    check_obj(res4, err);
 }
 
 //** ITEMS SELLER **//
