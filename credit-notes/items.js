@@ -42,7 +42,7 @@ export function items_invalid_quantity() {
     console.log(res2.body);
 
     // set quantity max 2 decimal
-    obj.items[0].quantity = 1.9999;
+    obj.items[0].quantity = 1.999;
     let res3 =  http.post(url, JSON.stringify(obj), auth());
     console.log(res3.body);
 
@@ -98,6 +98,11 @@ export function items_invalid_discount_max_and_min_range_config_invoice_discount
 
     // check
     check_obj(res, err);
+
+    // fluent no me permite validar el -1 como invalid_range
+    err.code = "invalid_amount";
+    err.message = "The discount amount is invalid";
+    err.detail  = "Check the API documentation: https://siigoapi.docs.apiary.io/#introduction/codigos-de-error/invalid_amount";
     check_obj(res1, err);
 }
 
@@ -107,39 +112,34 @@ export function items_invalid_discount_config_invoice_discount_value() {
     var obj = data.body;
     // expected
     let err = {
-        status : 400,
-        code   : "invalid_value",
-        message: "Invalid value: quantity", 
-        params : "items[0].quantity",
-        detail : "Check the API documentation: https://siigoapi.docs.apiary.io/#introduction/codigos-de-error/invalid_value"
+        status  : 400,
+        code    : "invalid_amount",
+        message : "The discount amount is invalid",
+        params  : "items[0].discount",
+        detail  : "Check the API documentation: https://siigoapi.docs.apiary.io/#introduction/codigos-de-error/invalid_amount"
     };
 
-    // set quantity negative
-    obj.items[0].quantity = 1,9999;
+    // max value
+    obj.items[0].discount = Number.MAX_SAFE_INTEGER;
     let res =  http.post(url, JSON.stringify(obj), auth());
     console.log(res.body);
 
-    // check
-    check_obj(res, err);
-}
-// puede que se una con la de arriba
-export function items_invalid_discount() {
-    var url = data.url;
-    var obj = data.body;
-
-    // max value
-    obj.items[0].discount = 999,999,999,999.99;
-
     // max 2 decimals
     obj.items[0].discount = 1.999;
-
-
-    obj.items[0].discount = 1,99999999;
+    let res1 =  http.post(url, JSON.stringify(obj), auth());
+    console.log(res1.body);
 
     // number negative
+    obj.items[0].discount = -1; 
+    let res2 =  http.post(url, JSON.stringify(obj), auth());
+    console.log(res2.body);
 
-    obj.items[0].discount = -1;  
+    // check
+    check_obj(res, err);
+    check_obj(res1, err);
+    check_obj(res2, err);
 }
+
 
 
 export function items_invalid_prices() {
@@ -160,7 +160,9 @@ export function items_invalid_prices() {
     console.log(res.body);
 
     // max 6 decimals
-    obj.items[0].price = 1.9999999999999999;
+    obj.items[0].price = 1.9999999; 
+    // 1.9999999999999999999999 si se envia un valor con mas de 16 decimales de error 
+    // payment amount is invalid
     let res1 =  http.post(url, JSON.stringify(obj), auth());
     console.log(res1.body);
 
@@ -318,6 +320,7 @@ export function items_invalid_warehouse_active_product_no_handle_inventory() {
     check_obj(res, err);
 }
 
+// de que endpoint puedo saber si el item maneja inventarios
 export function items_invalid_warehouse() {
     MESSAGE("RESPONSE: ITEMS INVALID WAREHOUSE");
     var url = data.url;
@@ -326,10 +329,10 @@ export function items_invalid_warehouse() {
     let err = {
         status  : 400,
         code    : "invalid_reference",
-        message : "The field code only allows a maximum length of 30 characters", 
-        params  : "items[0].code",
-        detail  : "Check the API documentation: https://siigoapi.docs.apiary.io/#introduction/codigos-de-error/length_max"
-    };
+        message : "The warehouse doesn't exist: 0",
+        params  : "items[0].warehouse",
+        detail  : "Check the API documentation: https://siigoapi.docs.apiary.io/#introduction/codigos-de-error/invalid_reference"
+    }
     // let allowedWarehouse = http.get("http://host.docker.internal:8671/ACGeneral/api/v1/Company/GetUseWarehouse?namespace=v1", auth());
     // console.log(allowedWarehouse.body);
     // allowedWarehouse = JSON.parse(invoice.body);
@@ -340,25 +343,33 @@ export function items_invalid_warehouse() {
     let res =  http.post(url, JSON.stringify(obj), auth());
     console.log(res.body);
 
-    // warehouse not exist
-    obj.items[0].warehouse = 121;
-    let res3 =  http.post(url, JSON.stringify(obj), auth());
-    console.log(res3.body);
-
     // warehouse negative
-    obj.items[0].warehouse = -1;
+    obj.items[0].warehouse = 121;
     let res1 =  http.post(url, JSON.stringify(obj), auth());
     console.log(res1.body);
 
     // warehouse max value
-    obj.items[0].warehouse = Number.MAX_SAFE_INTEGER + 1;
+    obj.items[0].warehouse = -1;
     let res2 =  http.post(url, JSON.stringify(obj), auth());
     console.log(res2.body);
 
+    // warehouse not exist
+    obj.items[0].warehouse =  9223372036854775807 + 1;
+    let res3 =  http.post(url, JSON.stringify(obj), auth());
+    console.log(res3.body);
+
     // checks
     check_obj(res, err);
+    err.message = "The warehouse doesn't exist: 121";
     check_obj(res1, err);
+    err.message = "The warehouse doesn't exist: -1";
     check_obj(res2, err);
+
+    err.message = "Invalid data type: warehouse";
+    err.code = "invalid_type";
+    err.detail = "Check the API documentation: https://siigoapi.docs.apiary.io/#introduction/codigos-de-error/invalid_type";
+
+    // err.message = `The warehouse doesn't exist: ${9223372036854775807 + 1}`;
     check_obj(res3, err);
 }
 
@@ -421,7 +432,7 @@ export function items_invalid_taxes_not_exist() {
         status  : 400,
         code    : "invalid_reference",
         message : "The tax doesn't exist: 1212121",
-        params  : "taxes[0].id",
+        params  : "items[0].taxes[0].id",
         detail  : "Check the API documentation: https://siigoapi.docs.apiary.io/#introduction/codigos-de-error/invalid_reference"
     }
 
@@ -443,7 +454,7 @@ export function items_invalid_taxes_parameter_inactive() {
         status  :  400,
         code    : "parameter_inactive",
         message : "The id is inactive: 1212121", 
-        params  : "taxes[0].id",
+        params  : "items[0].taxes[0].id",
         detail  : "Check the API documentation: https://siigoapi.docs.apiary.io/#introduction/codigos-de-error/parameter_inactive"
     };
 
@@ -608,7 +619,6 @@ function build_test(test) {
         items_invalid_quantity,
         items_invalid_discount_max_and_min_range_config_invoice_discount_percentage,
         items_invalid_discount_config_invoice_discount_value,
-        items_invalid_discount,
         items_invalid_prices,
         payments_invalid_value,
         items_invalid_code_length_max,

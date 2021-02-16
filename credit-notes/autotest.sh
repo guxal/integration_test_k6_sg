@@ -4,7 +4,6 @@ array=(
     "items_invalid_quantity"
     "items_invalid_discount_max_and_min_range_config_invoice_discount_percentage"
     "items_invalid_discount_config_invoice_discount_value"
-    "items_invalid_discount"
     "items_invalid_prices"
     "payments_invalid_value"
     "items_invalid_code_length_max"
